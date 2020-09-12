@@ -1,11 +1,7 @@
 package src.raytracer;
 
 import src.scene.Scene;
-import src.scene.SceneObject;
-import src.scene.Colour;
-import src.scene.PointLight;
-import src.model.Model;
-import src.math.Vec3;
+import src.scene.SceneLoader;
 
 import java.util.ArrayList;
 import java.io.File;
@@ -27,32 +23,9 @@ public class Main {
     public static void main(String[] args) throws IOException, FileNotFoundException, InterruptedException {
         //should probably move this scene creation into Scene and load from xml or smth...
         //will implement later
-        Model first_torus_model = new Model("assets/low_poly_torus.stl");
-        Model second_torus_model = new Model("assets/low_poly_torus.stl");
 
-        SceneObject first_torus = new SceneObject(first_torus_model, new Colour(0.2, 0.2, 0.8));
-        first_torus.set_scaling(0.3);
-        first_torus.set_rotation(-0.2, new Vec3(0.0, 1.0, 0.1).norm());
-        first_torus.set_translation(new Vec3(0.0, -0.1, 1.0));
-        first_torus.transform_model();
-
-        SceneObject second_torus = new SceneObject(second_torus_model, new Colour(0.8, 0.2, 0.2));
-        second_torus.set_scaling(0.3);
-        second_torus.set_rotation(-1.0, new Vec3(1.0, 0.0, 0.1).norm());
-        second_torus.set_translation(new Vec3(0.3, 0.0, 1.0));
-        second_torus.transform_model();
-        
-        PointLight first_light = new PointLight(new Vec3(2.0, 2.0, 0.0), new Colour(1.0, 1.0, 1.0), 5.0);
-        PointLight second_light = new PointLight(new Vec3(0.0, 3.0, 0.0), new Colour(1.0, 1.0, 1.0), 5.0);
-
-        ArrayList<SceneObject> objs = new ArrayList<>();
-        ArrayList<PointLight> lights = new ArrayList<>();
-        objs.add(first_torus);
-        objs.add(second_torus);
-        lights.add(first_light);
-        lights.add(second_light);
-
-        Scene scene = new Scene(objs, lights);
+        SceneLoader scene_loader = new SceneLoader("test_scene.xml");
+        Scene scene = scene_loader.get_scene();
 
         BufferedImage im = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 
