@@ -33,7 +33,7 @@ public class Scene {
     }
 
     public void set_ambient_light(Colour light, double intensity) {
-        this.ambient_lightin = light;
+        this.ambient_lighting = light;
         this.ambient_intensity = intensity;
     }
 

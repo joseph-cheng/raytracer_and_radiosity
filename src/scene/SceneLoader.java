@@ -9,22 +9,23 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class SceneLoader {
     private Scene scene;
 
-    public SceneLoader(String filename) {
+    public SceneLoader(String filename) throws IOException {
         scene = new Scene();
 
-        if (!xml_file.endsWith(".xml")) {
+        if (!filename.endsWith(".xml")) {
             throw new IllegalArgumentException("File is not an .xml file");
         }
 
-        Element document;
+        Element document = null;
         try {
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File(xml_file)).getDocumentElement();
+            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File(filename)).getDocumentElement();
         }
         catch (ParserConfigurationException e) {
             assert false;
@@ -40,7 +41,12 @@ public class SceneLoader {
             throw new RuntimeException("Scene file does not contain a scene element");
         }
 
-        for (Element element : document.getChildNodes()) {
+        NodeList elements = document.getChildNodes();
+        for (int ii=0; ii < elements.getLength(); ii++) {
+            if (elements.item(ii).getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            Element element = (Element) elements.item(ii);
             switch (element.getNodeName()) {
                 case "object":
                     scene.add_object(get_object(element));
@@ -56,7 +62,6 @@ public class SceneLoader {
 
                 default:
                     throw new RuntimeException("Unknown object tag: " + element.getNodeName());
-l
             }
         }
     }
@@ -65,10 +70,15 @@ l
         return scene;
     }
 
-    private SceneObject get_object(Element object) {
+    private SceneObject get_object(Element object) throws IOException {
         SceneObject obj = new SceneObject();
 
-        for (Element element : object.getChildNodes()) {
+        NodeList elements = object.getChildNodes();
+        for (int ii=0; ii < elements.getLength(); ii++) {
+            if (elements.item(ii).getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            Element element = (Element) elements.item(ii);
             switch (element.getNodeName()) {
                 case "model":
                     obj.set_model(new Model(element.getAttribute("file")));
@@ -104,9 +114,9 @@ l
 
     private Colour get_colour(Element tag) {
         String hex_colour = tag.getAttribute("colour");
-        double r = Integer.parseInt(hexString.substring(1, 3), 16) / 255.0;
-        double g = Integer.parseInt(hexString.substring(3, 5), 16) / 255.0;
-        double b = Integer.parseInt(hexString.substring(5, 7), 16) / 255.0;
+        double r = Integer.parseInt(hex_colour.substring(1, 3), 16) / 255.0;
+        double g = Integer.parseInt(hex_colour.substring(3, 5), 16) / 255.0;
+        double b = Integer.parseInt(hex_colour.substring(5, 7), 16) / 255.0;
 
         return new Colour(r,g,b);
     }

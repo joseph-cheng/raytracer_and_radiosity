@@ -190,6 +190,7 @@ public class Mat4 {
     }
 
     public static Mat4 rotation_matrix(double angle, Vec3 axis) {
+        axis = axis.norm();
         Mat4 result = new Mat4();
         double c = Math.cos(angle);
         double s = Math.sin(angle);
