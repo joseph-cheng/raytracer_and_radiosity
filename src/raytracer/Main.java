@@ -21,15 +21,32 @@ public class Main {
     public static int NUM_THREADS = 12;
 
     public static void main(String[] args) throws IOException, FileNotFoundException, InterruptedException {
-        //should probably move this scene creation into Scene and load from xml or smth...
-        //will implement later
 
-        SceneLoader scene_loader = new SceneLoader("test_scene.xml");
+        String scene_file;
+        String output_file = "out.bmp";
+
+        if (args.length == 1) {
+            scene_file = args[0];
+        }
+        else if (args.length == 2) {
+            scene_file = args[0];
+            output_file = args[1];
+        }
+        else {
+            System.out.println("Error: invalid arguments\nUsage: java src.raytracer.Main [scene_file.xml] [out_file.bmp (default out.bmp)]");
+            return;
+
+        }
+
+        System.out.println("Loading scene from " + scene_file + "...");
+        SceneLoader scene_loader = new SceneLoader(scene_file);
         Scene scene = scene_loader.get_scene();
 
         BufferedImage im = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 
         ExecutorService es = Executors.newCachedThreadPool();
+
+        System.out.println("Rendering...");
 
         for (int line=0; line < SCREEN_HEIGHT; line += SCREEN_HEIGHT/NUM_THREADS) {
             Raytracer renderer = new Raytracer(SCREEN_WIDTH, SCREEN_HEIGHT, NUM_BOUNCES, scene, im, line, SCREEN_HEIGHT/NUM_THREADS);
@@ -38,7 +55,10 @@ public class Main {
         es.shutdown();
         es.awaitTermination(1, TimeUnit.HOURS);
 
-        File image_file = new File("out.bmp");
+        System.out.println("Writing to " + output_file + "...");
+
+        File image_file = new File(output_file);
         ImageIO.write(im, "bmp", image_file);
+        System.out.println("Finished");
     }
 }

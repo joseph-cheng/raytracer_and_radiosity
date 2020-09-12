@@ -43,7 +43,6 @@ public class Raytracer implements Runnable{
                 Colour corrected_colour = tonemap(linear_colour);
                 this.image_to_draw_to.setRGB(xx, yy, corrected_colour.to_rgb());
             }
-            System.out.println(yy);
         }
 
 
