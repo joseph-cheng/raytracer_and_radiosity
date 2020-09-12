@@ -1,11 +1,7 @@
 package src.raytracer;
 
 import src.scene.Scene;
-import src.scene.SceneObject;
-import src.scene.Colour;
-import src.scene.PointLight;
-import src.model.Model;
-import src.math.Vec3;
+import src.scene.SceneLoader;
 
 import java.util.ArrayList;
 import java.io.File;
@@ -25,38 +21,32 @@ public class Main {
     public static int NUM_THREADS = 12;
 
     public static void main(String[] args) throws IOException, FileNotFoundException, InterruptedException {
-        //should probably move this scene creation into Scene and load from xml or smth...
-        //will implement later
-        Model first_torus_model = new Model("assets/low_poly_torus.stl");
-        Model second_torus_model = new Model("assets/low_poly_torus.stl");
 
-        SceneObject first_torus = new SceneObject(first_torus_model, new Colour(0.2, 0.2, 0.8));
-        first_torus.set_scaling(0.3);
-        first_torus.set_rotation(-0.2, new Vec3(0.0, 1.0, 0.1).norm());
-        first_torus.set_translation(new Vec3(0.0, -0.1, 1.0));
-        first_torus.transform_model();
+        String scene_file;
+        String output_file = "out.bmp";
 
-        SceneObject second_torus = new SceneObject(second_torus_model, new Colour(0.8, 0.2, 0.2));
-        second_torus.set_scaling(0.3);
-        second_torus.set_rotation(-1.0, new Vec3(1.0, 0.0, 0.1).norm());
-        second_torus.set_translation(new Vec3(0.3, 0.0, 1.0));
-        second_torus.transform_model();
-        
-        PointLight first_light = new PointLight(new Vec3(2.0, 2.0, 0.0), new Colour(1.0, 1.0, 1.0), 5.0);
-        PointLight second_light = new PointLight(new Vec3(0.0, 3.0, 0.0), new Colour(1.0, 1.0, 1.0), 5.0);
+        if (args.length == 1) {
+            scene_file = args[0];
+        }
+        else if (args.length == 2) {
+            scene_file = args[0];
+            output_file = args[1];
+        }
+        else {
+            System.out.println("Error: invalid arguments\nUsage: java src.raytracer.Main [scene_file.xml] [out_file.bmp (default out.bmp)]");
+            return;
 
-        ArrayList<SceneObject> objs = new ArrayList<>();
-        ArrayList<PointLight> lights = new ArrayList<>();
-        objs.add(first_torus);
-        objs.add(second_torus);
-        lights.add(first_light);
-        lights.add(second_light);
+        }
 
-        Scene scene = new Scene(objs, lights);
+        System.out.println("Loading scene from " + scene_file + "...");
+        SceneLoader scene_loader = new SceneLoader(scene_file);
+        Scene scene = scene_loader.get_scene();
 
         BufferedImage im = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 
         ExecutorService es = Executors.newCachedThreadPool();
+
+        System.out.println("Rendering...");
 
         for (int line=0; line < SCREEN_HEIGHT; line += SCREEN_HEIGHT/NUM_THREADS) {
             Raytracer renderer = new Raytracer(SCREEN_WIDTH, SCREEN_HEIGHT, NUM_BOUNCES, scene, im, line, SCREEN_HEIGHT/NUM_THREADS);
@@ -65,7 +55,10 @@ public class Main {
         es.shutdown();
         es.awaitTermination(1, TimeUnit.HOURS);
 
-        File image_file = new File("out.bmp");
+        System.out.println("Writing to " + output_file + "...");
+
+        File image_file = new File(output_file);
         ImageIO.write(im, "bmp", image_file);
+        System.out.println("Finished");
     }
 }

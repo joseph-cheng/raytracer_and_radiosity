@@ -1,3 +1,5 @@
 *.bmp
 *.stl
 *.class
+*.swp
+*.xml
